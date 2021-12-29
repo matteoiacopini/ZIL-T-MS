@@ -314,5 +314,5 @@ on Web Search and Data Mining, 2017.
 
 * simdata_T100_I10_J10_K1_Q3_L2.mat
 Synthetic dataset generated from the model given a specific coefficient tensor G
-in input.
+as input.
 
