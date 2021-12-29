@@ -19,7 +19,7 @@ load('Data_email.mat');
 % MCMC settings
 L       = 3;      % number of states
 R       = 5;      % CP tensor rank (actual is Rbar = R/2, due to constraint on coefficient tensor)
-NumIter = 5000;   % number of MCMC samples to be stored
+NumIter = 3000;   % number of MCMC samples to be stored
 burn    = 1000;   % number of MCMC samples to be discarded
 
 
@@ -66,7 +66,7 @@ subplot(2,2,1:2);
 hold on; stairs(OUT.MAP_st,'-r','linew',1.0); ylim([0,L+1]); hold off;
 ylabel('$s_t$');  xlabel('time');
 set(gca,'YTick',1:L,'YTickLabel',repmat(num2cell(1:L),[1,2]));
-legend({'true','estimate'},'Orientation','horizontal','location','north');
+legend({'estimate'},'Orientation','horizontal','location','north');
 % trace plot
 subplot(2,2,3:4);
 contourf(OUT.sthat); colormap(flipud(gray)); colorbar;
