@@ -1,7 +1,7 @@
 %% DEMO script for ZIL-T-MS model with vector covariate
 % (1) load a synthetic dataset
 % (2) estimate the ZIL-T-MS model
-% (3) make some plots
+% (3) plot coefficients and hidden states
 
 clear;  close all;
 clc;  
