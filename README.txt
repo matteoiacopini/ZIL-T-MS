@@ -286,7 +286,9 @@ Contains the data for the application to a financial network:
        Each entry Xt(i,j,k,t) = 1 represents a linkage between institutions i
        and j, on layer k, at time t.
        Layer k=1 represents the return network, layer k=2 the volatility network.
- - Zt: covariate tensor with Q=8 edge-specific covariates
+ - Zt: covariate tensor with Q=8 edge-specific covariates.
+       Each entry Zt(:,:,:,q,t) represents the value of the q-th covariate
+       at time t:
          q=1 is a constant;
          q=2 is the lagged degree of layer 1;
          q=3 is the DVX;
@@ -306,7 +308,8 @@ on Web Search and Data Mining, 2017.
        Each entry Xt(i,j,k,t) = 1 represents an email between researchers i
        and j, on layer k, at time t.
        Layer k=1 represents Department 3, layer k=2 Department 4.
- - Zt: covariate vector with Q=3 common covariates
+ - Zt: covariate vector with Q=3 common covariates.
+       Each entry Zt(q,t) represents the value of the q-th covariate at time t:
          q=1 is a constant;
          q=2 is the lagged degree of layer 1;
          q=3 is the lagged degree of layer 2.
