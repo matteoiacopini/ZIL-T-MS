@@ -1,10 +1,12 @@
 TITLE: "Bayesian Markov Switching Tensor Regression for Time-varying Networks"
 
-AUTHORS:            ........
+AUTHORS:            Monica Billio, Roberto Casarin, Matteo Iacopini
 
-AVAILABLE AT:       ........
+AVAILABLE AT:       https://arxiv.org/abs/1711.00097
 
-PLEASE CITE AS:     ........
+PLEASE CITE AS:     Billio, M., Casarin, R., Iacopini, M. (20XX),
+		    "Bayesian Markov Switching Tensor Regression for
+                    Time-varying Networks"
 
 DATE:               December 2021
 
