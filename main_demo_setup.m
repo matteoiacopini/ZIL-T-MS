@@ -138,11 +138,9 @@ for p=1:NN
    for l=1:L
       sg = squeeze(Gentry(p,l,:));
       if (K==1)
-         Gtl = Gtrue(:,:,:,l);
          [ii,jj,qq] = ind2sub([I,J,Q],pos(p));
          ylab = ['$G_{',num2str(ii),',',num2str(jj),',',num2str(qq),'}$'];
       else
-         Gtl = Gtrue(:,:,:,:,l);
          [ii,jj,kk,qq] = ind2sub([I,J,K,Q],pos(p));
          ylab = ['$G_{',num2str(ii),',',num2str(jj),',',num2str(kk),',',num2str(qq),'}$'];
       end
@@ -151,7 +149,6 @@ for p=1:NN
       subplot(NN,L*3,((p-1)*L+(l-1))*3+1);
          histogram(sg,'normalization','proba','FaceColor',[1,1,1]*.8,'EdgeAlpha',0);
          xline(mean(sg),'--k','linew',1);
-%          hold on; scatter(Gtl(pos(p)),0,40,'dk','filled'); hold off;
          ylabel(ylab,'Interpreter','latex');
       % trace plot + progressive mean
       subplot(NN,L*3,((p-1)*L+(l-1))*3+2);
