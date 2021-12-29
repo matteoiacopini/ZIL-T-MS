@@ -1,7 +1,7 @@
-function [OUT] = Bayes_ZIL_T_MS_1l_edgespec_TEST(Xt,Zt, nameArgs)
-%% Bayes_ZIL_T_MS_1l_edgespec_TEST Estimate the Bayesian Zero-Inflated Logit Tensor model with Markov Switching coefficients (ZIL-T-MS) with edge-specific covariates and K=1 layers
+function [OUT] = Bayes_ZIL_T_MS_1l_edgespec_FUNC(Xt,Zt, nameArgs)
+%% Bayes_ZIL_T_MS_1l_edgespec_FUNC Estimate the Bayesian Zero-Inflated Logit Tensor model with Markov Switching coefficients (ZIL-T-MS) with edge-specific covariates and K=1 layers
 %
-%   [OUT] = Bayes_ZIL_T_MS_1l_edgespec_TEST(XT,ZT,NAMEARGS)
+%   [OUT] = Bayes_ZIL_T_MS_1l_edgespec_FUNC(XT,ZT,NAMEARGS)
 %   Estimates the Bayesian Zero-Inflated Logit with Markov Switching coefficients model (ZIL-T-MS)
 %   with edge-specific covariates.
 %   The observations consists in binary arrays XT of size (I,J,T) and covariates ZT of size (I,J,Q,T).

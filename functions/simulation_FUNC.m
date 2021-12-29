@@ -1,7 +1,7 @@
-function [OUT,data] = main_simulation_TEST(nameArgs)
-%% main_simulation_TEST Generates synthetic binary temporal network dataset, then estimates the Tensor MS-ZIL model
+function [OUT,data] = simulation_FUNC(nameArgs)
+%% simulation_FUNC Generates synthetic binary temporal network dataset, then estimates the Tensor MS-ZIL model
 %
-%   [OUT,DATA] = main_simulation_TEST(NAMEARGS)
+%   [OUT,DATA] = simulation_FUNC(NAMEARGS)
 %   Generates a synthetic dataset from the ZIL-T-MS model, using the setting specified by the
 %   hyperparameter values provided as optional name-value pair arguments.
 %   If no inout is provided, then the function will assign default values to the hyperparameters.
@@ -116,7 +116,7 @@ end
 G = squeeze(G);
 
 % generate synthetic data
-data = gen_data_TEST('I',I, 'J',J, 'K',K, 'Q',Q, 'T',T, 'L',L, 'R',R, 'G',G);
+data = gen_data_FUNC('I',I, 'J',J, 'K',K, 'Q',Q, 'T',T, 'L',L, 'R',R, 'G',G);
 
 % save synthetic data
 if save_file
@@ -131,9 +131,9 @@ Xt = data.Xt;
 Zt = data.Zt;
 
 if (K == 1)
-   OUT = Bayes_ZIL_T_MS_1l_TEST(Xt,Zt, 'NumIter',NumIter,'burn',burn,'thin',thin,'irep',irep);
+   OUT = Bayes_ZIL_T_MS_1l_FUNC(Xt,Zt, 'NumIter',NumIter,'burn',burn,'thin',thin,'irep',irep);
 else
-   OUT = Bayes_ZIL_T_MS_2l_TEST(Xt,Zt, 'NumIter',NumIter,'burn',burn,'thin',thin,'irep',irep);
+   OUT = Bayes_ZIL_T_MS_2l_FUNC(Xt,Zt, 'NumIter',NumIter,'burn',burn,'thin',thin,'irep',irep);
 end
 OUT.data = data;
 OUT.NumIter = NumIter;

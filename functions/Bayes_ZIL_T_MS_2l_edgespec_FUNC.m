@@ -1,18 +1,18 @@
-function [OUT] = Bayes_ZIL_T_MS_2l_TEST(Xt,Zt, nameArgs)
-%% Bayes_ZIL_T_MS_2l_TEST Estimate the Bayesian Zero-Inflated Logit Tensor model with Markov Switching coefficients (ZIL-T-MS) with common covariates and K>1 layers
+function [OUT] = Bayes_ZIL_T_MS_2l_edgespec_FUNC(Xt,Zt, nameArgs)
+%% Bayes_ZIL_T_MS_2l_edgespec_FUNC Estimate the Bayesian Zero-Inflated Logit Tensor model with Markov Switching coefficients (ZIL-T-MS) with edge-specific covariates and K>1 layers
 %
-%   [OUT] = Bayes_ZIL_T_MS_2l_edgespec_TEST(XT,ZT,NAMEARGS)
+%   [OUT] = Bayes_ZIL_T_MS_2l_edgespec_FUNC(XT,ZT,NAMEARGS)
 %   Estimates the Bayesian Zero-Inflated Logit with Markov Switching coefficients model (ZIL-T-MS)
 %   with edge-specific covariates.
-%   The observations consists in binary arrays XT of size (I,J,K,T) and covariates ZT of size (Q,T).
+%   The observations consists in binary arrays XT of size (I,J,K,T) and covariates ZT of size (I,J,K,Q,T).
 %   If the additional inputs necessary for the estimation are not provided as optional name-value
 %   pair arguments, then the function will assign default values.
 %   The output is a structure, OUT, containing the posterior mean of the coefficient tensor, G,
 %   and the MAP estimate of the hidden Markov chain, ST.
 %
 % INPUTS
-%  Xt  (I,J,K,T)  array of (I,J,K) binary observations for each time t=1...T
-%  Zt  (Q,T)      vector of Q covariates for each time t=1...T
+%  Xt  (I,J,K,T)     array of (I,J,K) binary observations for each time t=1...T
+%  Zt  (I,J,K,Q,T)   vector of Q covariates for each edge i,j,k and time t=1...T
 %  nameArgs       optional arguments, specified as ('name',value) pairs. Includes:
 %     - 'NumIter'   number of MCMC iterations to be retained
 %     - 'burn'      number of burn-in iterations to be discarded
@@ -50,7 +50,7 @@ function [OUT] = Bayes_ZIL_T_MS_2l_TEST(Xt,Zt, nameArgs)
 % Check inputs and set DEFAULT values for optional ones
 arguments
    Xt (:,:,:,:) double                     % array (I,J,K,T) of (I,J,K) binary observations for each time t=1...T
-   Zt (:,:) double                         % array (Q,T)     of Q covariates for each time t=1...T
+   Zt (:,:,:,:,:) double                   % array (I,J,K,Q,T) of Q covariates for each edge i,j,k and time t=1...T
    nameArgs.L        (1,1) double = 2      % number of states of the hidden chain
    nameArgs.R        (1,1) double = 5      % coefficient tensor CP rank
    nameArgs.NumIter  (1,1) double = 1000   % number of MCMC iterations to store
@@ -66,15 +66,16 @@ burn    = nameArgs.burn;
 thin    = nameArgs.thin;
 irep    = nameArgs.irep;
 
-% checks
-if size(Xt,ndims(Xt)) ~= size(Zt,ndims(Zt))
-   error('Xt must be (I,J,K,T) and Zt must be (Q,T).')
-end
+% % checks
+% if size(Xt,ndims(Xt)) ~= size(Zt,ndims(Zt))
+%    error('Xt must be (I,J,K,T) and Zt must be (Q,T).')
+% end
 
 % Baseline parameters
 TotIter = NumIter*thin + burn;
 [I,J,K,T] = size(Xt);
-Q         = size(Zt,1);
+Q         = size(Zt,4);
+tenZt     = tensor(Zt);
 dims      = [I,J,K,Q];
 
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
@@ -179,44 +180,35 @@ end
 relabel = 0;   % number of relabelled iterations
 it = 0;
 
-tms = zeros(TotIter,10);
-tms_lab = {'st','PG','phi','tau','lambda','w','gammas','G','ident','store'};
-
-t0=tic;
+tic;
 for iter=1:TotIter   
    %%%%%%%%%% Update s_t - FFBS %%%%%%%%%%
-   tic;
    % Forward Filtering Backward Sampling --> Multi-move of Fruhwirth-Schnatter (2006), ch11.5
-   [~,~,~,smoothp,sthat,~] = ffbsX_tensorData(Xt,Zt,rhohat,Ghat,xihat,iphat,0);
+   [~,~,~,smoothp,sthat,~] = ffbsX_tensorData_edge_specific(Xt,Zt,rhohat,Ghat,xihat,iphat,0);
    iphat = smoothp(1,:)';     % update initial probability vector
    for ll=1:L
       Tl{ll} = find(sthat == ll);
    end
-   tms(iter,1) = toc;
    
    
-   tic;
    is = cell(1,T);    js = is;     ss = is;
    rows = 1:I*J*K;
-   for t = 1:T
+   for t=1:T
       %%%%%%%%%% Update omega_ij,t - PG %%%%%%%%%%
       % VECTORIZED PGvrnd. Need reshape, matrix IxJQL -> IxJxQ for l=state, j= all; q= all; l= sthat(t) -> 1:JQ or 1+JQ:2JQ
 %       Glz   = double( ttv(Ghat(:,:,:,:,sthat(t)), Zt(:,t), 4) );   % select tensor for state t --> IxJQ
-      Glz    = ttv_mod(Ghat(:,:,:,:,sthat(t)), Zt(:,t), 4);   % select tensor for state t --> IxJQ
+      Glz   = sum( double( Ghat(:,:,:,:,sthat(t)) .* tenZt(:,:,:,:,t) ), 4);
       vecGlz = reshape(Glz,[],1);
       omegahat = PG1rnd00_mex(vecGlz);
-%       omegahat = PGvrndCluster(1,1,vecGlz);
 %       omegahat = reshape(PGvrndCluster(1,1,reshape(Glz,[],1)), [I,J,K]);
-%       omegahat = PGvrndCluster(1,1,reshape(Glz,[],1));
       %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
       % speed SPARSE: create new block with values, add to previous (0)
-%       rows= 1:I*J*K;     cols= 1+I*J*K*(t-1) : I*J*K*t;
+%       rows= 1:I*J*K;     cols= 1+I*J*K*(t-1):I*J*K*t;
 %       addOmega = sparse(rows, cols, omegahat(:), I*J*K, I*J*K*T);
-%       addOmega = sparse(rows, cols, omegahat, I*J*K, I*J*K*T);
 %       Omegabarbar = Omegabarbar + addOmega;
       cols = 1+I*J*K*(t-1) : I*J*K*t;
       is{t} = rows;  js{t} = cols;  ss{t} = omegahat; % append "on the corner"
-      %%%%%%%%%% Update d_ijk,t - inverse CDF %%%%%%%%%%
+      %%%%%%%%%% Update d_ij,t - inverse CDF %%%%%%%%%%
 %       Pnotnorm1 =    rhohat(sthat(t))  * (Xt(:,:,:,t)==0);
 %       Pnotnorm0 = (1-rhohat(sthat(t))) * ( (exp(Glz .* Xt(:,:,:,t))) ./ (1+exp(Glz)) );
 %       Pnorm1 = Pnotnorm1 ./ (Pnotnorm1+Pnotnorm0);
@@ -225,22 +217,21 @@ for iter=1:TotIter
       Pnotnorm0 = (1-rhohat(sthat(t))) * ( (exp(vecGlz .* vecXt(:,t))) ./ (1+exp(vecGlz)) );
       Pnorm1 = Pnotnorm1 ./ (Pnotnorm1+Pnotnorm0);
       dhat(:,t) = binornd(1,Pnorm1); % equivalent to:  un= rand(I,J); double(un < Pnorm1);
-      %%% Necessary for:   gammas %%%
+      % Necessary for:   gammas
 %       Kappa = (1-dhat(:,:,:,t)) .* (Xt(:,:,:,t)-1/2);
 %       u(:,t) = reshape( Kappa ./ omegahat, [],1);
       Kappa = (1-dhat(:,t)) .* (vecXt(:,t)-1/2);
       u(:,t) = Kappa ./ omegahat;
    end
    Omegabarbar = sparse([is{:}], [js{:}], [ss{:}]);
-   tms(iter,2) = toc;
    
    % Necessary for:   rhohat
    N1 = zeros(L,1);    N0 = zeros(L,1);    Ns = zeros(L,L);
    for ll=1:L
       N1(ll) = sum(sum( dhat(:,sthat==ll) ==1 ));
       N0(ll) = sum(sum( dhat(:,sthat==ll) ==0 ));
-%       N1(ll) = sum(sum(sum(sum( dhat(:,:,:,sthat==ll) ==1 ))));
-%       N0(ll) = sum(sum(sum(sum( dhat(:,:,:,sthat==ll) ==0 ))));
+%       N1(ll) = sum(sum(sum(dhat(:,:,sthat==ll)==1)));
+%       N0(ll) = sum(sum(sum(dhat(:,:,sthat==ll)==0)));
       for kk=1:L
          % number transitions each state (i,j) = i --> j
          Ns(ll,kk) = sum((sthat(1:T-1)==ll) & (sthat(2:T)==kk));
@@ -253,7 +244,6 @@ for iter=1:TotIter
    brpost = brhobar + N0;  % Lx1
 
    
-   tic;
    %%%%%%%%%% Update phi_r - GiG %%%%%%%%%%
    pppost = alphabar-sum(dims);
    appost = 2*btaubar;
@@ -281,10 +271,11 @@ for iter=1:TotIter
          psihat(r) = gigrnd(pppost,appost,bppost,1);
       end
    end
+
    phihat = psihat / sum(psihat);   % phi: normalise psi
-   tms(iter,3) = toc;
    
-   tic;
+   
+
    %%%%%%%%%% Update tau - GiG %%%%%%%%%%
    ptpost = (alphabar-sum(dims))*R;
    atpost = 2*btaubar;
@@ -317,9 +308,8 @@ for iter=1:TotIter
    end
    % Gibbs
    tauhat = gigrnd(ptpost, atpost, btpost, 1);
-   tms(iter,4) = toc;
+   
 
-   tic;
    if constr_g3
       what_lambda = what(1:3,:,:);
    else
@@ -335,9 +325,8 @@ for iter=1:TotIter
 %                                                     1,eps_lmbd_hmc,L_lmbd,1,1);
       end
    end
-   tms(iter,5) = toc;
-   
-   tic;
+      
+      
    %%%%%%%%%% Update w_hrl - GiG %%%%%%%%%%
    pw1post = 1-I/2;    pw2post = 1-J/2;    pw3post = 1-K/2;    pw4post = 1-Q/2; % higher --> smaller out
    awpost  = lambdahat.^2;   % low influence
@@ -359,13 +348,8 @@ for iter=1:TotIter
          what(4,r,ll) = gigrnd(pw4post, awpost(ll), bw4postl, 1);
       end
    end
-   tms(iter,6) = toc;
    
-   %%%% SAME timing as plain code
-%    [gamma1hat,gamma2hat,gamma3hat,gamma4hat] = update_gammas(gamma1hat,gamma2hat,gamma3hat,gamma4hat,Zt,Tl,...
-%                                                              Omegabarbar,u, tauhat,phihat,what);
-
-   tic;
+      
    %%%%%%%%%% Update gamma_hlr - N %%%%%%%%%%
    %%% necessary for all gamma_hlr %%%
    for r=1:R
@@ -389,7 +373,8 @@ for iter=1:TotIter
 
 
       %%%%%%%%%% update gamma_1lr %%%%%%%%%%
-      gam4Zt        = zeros(T,1);
+%       gam4Zt        = zeros(T,1);
+      gam4Zt        = zeros(I*J*K,T);
       sumSigma1L1   = sparse(I,I);
       sumMuSigma1L1 = zeros(I,1);
       kron32L1      = sparse(kron(gamma3hat(:,r,ll), kron(gamma2hat(:,r,ll), eye(I))));
@@ -400,13 +385,15 @@ for iter=1:TotIter
             %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
             % AUX variables necessary for gamma1, gamma2, gamma3
 %             vecGlrZt = double( ttv(GlrL1, Zt(:,t), 4) );
-            vecGlrZt = ttv_mod(GlrL1, Zt(:,t), 4);
+            vecGlrZt = sum( double( GlrL1 .* tenZt(:,:,:,:,t) ), 4);
             uminusg(:,t) = u(:,t) - vecGlrZt(:);
             %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
-            gam4Zt(t) = gamma4hat(:,r,ll)' * Zt(:,t);
-            tmp = Omegabarbar(:,1+I*J*K*(t-1):I*J*K*t) * kron32L1;
-            sumSigma1L1   = sumSigma1L1   + (kron32L1' * tmp * gam4Zt(t)^2);
-            sumMuSigma1L1 = sumMuSigma1L1 + (gam4Zt(t) * uminusg(:,t)' * tmp)';
+%             gam4Zt(t) = gamma4hat(:,r,ll)' * Zt(:,t);
+%             Sigma1Inv_rlt = kron32L1' * Omegabarbar(:,1+I*J*K*(t-1):I*J*K*t) * kron32L1 * gam4Zt(t)^2;
+%             mu1_rlt       = (gam4Zt(t) * uminusg(:,t)' * Omegabarbar(:,1+I*J*K*(t-1):I*J*K*t) * kron32L1)';
+            gam4Zt(:,t) = reshape( double( ttv(tenZt(:,:,:,:,t),gamma4hat(:,r,ll),4) ), [], 1);
+            sumSigma1L1   = sumSigma1L1   + (gam4Zt(:,t).*kron32L1)' * Omegabarbar(:,1+I*J*K*(t-1):I*J*K*t) * (gam4Zt(:,t).*kron32L1);
+            sumMuSigma1L1 = sumMuSigma1L1 + (uminusg(:,t)' * Omegabarbar(:,1+I*J*K*(t-1):I*J*K*t) * (gam4Zt(:,t).*kron32L1))';
 %          end
       end
 %       Sigma1postInvL1 = S1likeInvL1 + sumSigma1L1;
@@ -428,7 +415,7 @@ for iter=1:TotIter
 %          if (sthat(t) == ll)
             tmp = Omegabarbar(:, 1+I*J*K*(t-1):I*J*K*t) * kron31L1;
             sumSigma2L1   = sumSigma2L1   + (kron31L1' * tmp * gam4Zt(t)^2);
-            sumMuSigma2L1 = sumMuSigma2L1 + (gam4Zt(t) * uminusg(:,t)' * tmp)';
+            sumMuSigma2L1 = sumMuSigma2L1 + (gam4Zt(t) * uminusg(:,t)' * tmp )';
 %          end
       end
 %       Sigma2postInvL1 = S2likeInvL1 + sumSigma2L1;
@@ -447,23 +434,23 @@ for iter=1:TotIter
          sumMuSigma3L1 = zeros(K,1);
          S3likeInvL1   = sparse((tauhat * phihat(r) * what(3,r,ll) * eye(K)))^(-1);
          for t = times_l   % sum according to regime
-   %       for t=1:T
-   %          if (sthat(t) == ll)
+%             for t=1:T
+%                if (sthat(t) == ll)
                tmp = Omegabarbar(:, 1+I*J*K*(t-1):I*J*K*t) * kron21L1;
                sumSigma3L1   = sumSigma3L1   + kron21L1' * tmp * gam4Zt(t)^2;
-               sumMuSigma3L1 = sumMuSigma3L1 + (gam4Zt(t) * uminusg(:,t)' * tmp)';
-   %          end
+               sumMuSigma3L1 = sumMuSigma3L1 + (gam4Zt(t) * uminusg(:,t)' * tmp )';
+%             end
          end
-   %       Sigma3postInvL1 = S3likeInvL1 + sumSigma3L1;
-   %       Sigma3postL1 = Sigma3postInvL1 \ eye(K);
-   %       mu3postL1    = Sigma3postInvL1 \ (S3likeInvL1*mu3prior(:,ll) + sumMuSigma3L1);
-   %       gamma3hat(:,r,ll) = mvnrnd(mu3postL1, Sigma3postL1);
+%          Sigma3postInvL1 = S3likeInvL1 + sumSigma3L1;
+%          Sigma3postL1 = Sigma3postInvL1 \ eye(K);
+%          mu3postL1    = Sigma3postInvL1 \ (S3likeInvL1*mu3prior(:,ll) + sumMuSigma3L1);
+%          gamma3hat(:,r,ll) = mvnrnd(mu3postL1, Sigma3postL1);
          C = chol(S3likeInvL1 + sumSigma3L1,'lower');    % Cholesky of posterior precision matrix
          xhat = C \ sumMuSigma3L1;                       % posterior mean
          gamma3hat(:,r,ll) = C'\(xhat + randn(K,1));
       end
       
-
+      
       %%%%%%%%%% update gamma_4lr %%%%%%%%%%
       sumSigma4L1   = zeros(Q,Q);
       sumMuSigma4L1 = zeros(Q,1);
@@ -472,123 +459,43 @@ for iter=1:TotIter
       else
          S4likeInvL1   = sparse((tauhat * phihat(r) * what(4,r,ll) * eye(Q)))^(-1);
       end
-      vec_gam123 = reshape( ktensor_mod({gamma1hat(:,r,ll),gamma2hat(:,r,ll),gamma3hat(:,r,ll)}), [], 1);
 %       vec_gam123 = reshape( double(ktensor({gamma1hat(:,r,ll),gamma2hat(:,r,ll),gamma3hat(:,r,ll)})), [], 1);
+      GGtmp = ktensor_mod({gamma1hat(:,r,ll),gamma2hat(:,r,ll),gamma3hat(:,r,ll)});
       for t = times_l   % sum according to regime
 %       for t=1:T
 %          if (sthat(t) == ll)
 %             Ztgam2 = Zt(:,t) * gamma2hat(:,r,ll)';
 %             Sigma4Inv_rlt = Ztgam2 * kron31L1' * Omegabarbar(:,1+I*J*K*(t-1):I*J*K*t) * kron31L1 * Ztgam2';
 %             mu4_rlt       = (uminusg(:,t)' * Omegabarbar(:,1+I*J*K*(t-1):I*J*K*t) * kron31L1 * Ztgam2')';
-            tmp = Omegabarbar(:,1+I*J*K*(t-1):I*J*K*t) * vec_gam123 * Zt(:,t)';
-            sumSigma4L1   = sumSigma4L1   + (Zt(:,t) * vec_gam123' * tmp);
+%             Sigma4Inv_rlt = Zt(:,t) * vec_gam123' * Omegabarbar(:,1+I*J*K*(t-1):I*J*K*t) * vec_gam123 * Zt(:,t)';
+%             mu4_rlt       = (uminusg(:,t)' * Omegabarbar(:,1+I*J*K*(t-1):I*J*K*t) * vec_gam123 * Zt(:,t)')';
+            matgZ = double( tenmat( GGtmp .* Zt(:,:,:,:,t), 4, [1,2,3] ) );
+            tmp = Omegabarbar(:,1+I*J*K*(t-1):I*J*K*t) * matgZ';
+            sumSigma4L1   = sumSigma4L1 + matgZ * tmp;
             sumMuSigma4L1 = sumMuSigma4L1 + (uminusg(:,t)' * tmp)';
 %          end
       end
 %       Sigma4postInvL1 = S4likeInvL1 + sumSigma4L1;
 %       Sigma4postL1 = MatPosDef(MatSym(Sigma4postInvL1 \ eye(Q)));
 %       mu4postL1    = Sigma4postInvL1 \ (S4likeInvL1*mu4prior(:,ll) + sumMuSigma4L1);
-%       gamma4hat(:,r,ll) = mvnrnd(mu4postL1, Sigma4postL1);
+%       gamma4hat(:,r,ll) = mvnrnd(mu4postL1, Sigma4postL1);    %  * temper(iter)
       C = chol(S4likeInvL1 + sumSigma4L1,'lower');    % Cholesky of posterior precision matrix
       xhat = C \ sumMuSigma4L1;                       % posterior mean
       gamma4hat(:,r,ll) = C'\(xhat + randn(Q,1));
       end
-
-
-%       %%%%%%%%%% update gamma_1lr %%%%%%%%%%
-%       gam4Zt        = zeros(T,1);
-%       sumSigma1L1   = sparse(I,I);
-%       sumMuSigma1L1 = zeros(I,1);
-%       kron32L1      = sparse(kron(gamma3hat(:,r,ll), kron(gamma2hat(:,r,ll), eye(I))));
-%       S1likeInvL1   = sparse((tauhat * phihat(r) * what(1,r,ll) * eye(I)))^(-1);
-%       for t=1:T
-%          % sum according to regime
-%          if (sthat(t) == ll)
-%             %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
-%             % AUX variables necessary for gamma1, gamma2, gamma3
-%             vecGlrZt = double( ttv(GlrL1, Zt(:,t), 4) );
-%             uminusg(:,t) = u(:,t) - vecGlrZt(:);
-%             %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
-%             gam4Zt(t) = gamma4hat(:,r,ll)' * Zt(:,t);
-%             sumSigma1L1   = sumSigma1L1   + (kron32L1' * Omegabarbar(:,1+I*J*K*(t-1):I*J*K*t) * kron32L1 * gam4Zt(t)^2);
-%             sumMuSigma1L1 = sumMuSigma1L1 + (gam4Zt(t) * uminusg(:,t)' * Omegabarbar(:,1+I*J*K*(t-1):I*J*K*t) * kron32L1)';
-%          end
-%       end
-% %       Sigma1postInvL1 = S1likeInvL1 + sumSigma1L1;
-% %       Sigma1postL1 = Sigma1postInvL1 \ eye(I);
-% %       mu1postL1    = Sigma1postInvL1 \ (S1likeInvL1*mu1prior(:,ll) + sumMuSigma1L1);
-% %       gamma1hat(:,r,ll) = mvnrnd(mu1postL1, Sigma1postL1);
-%       C = chol(S1likeInvL1 + sumSigma1L1,'lower');    % Cholesky of posterior precision matrix
-%       xhat = C \ sumMuSigma1L1;                       % posterior mean
-%       gamma1hat(:,r,ll) = C'\(xhat + randn(I,1));
-% 
-% 
-%       %%%%%%%%%% update gamma_2lr %%%%%%%%%%
-%       kron31L1 = sparse(kron(gamma3hat(:,r,ll), kron(eye(J), gamma1hat(:,r,ll))));
-%       sumSigma2L1   = sparse(J,J);
-%       sumMuSigma2L1 = zeros(J,1);
-%       S2likeInvL1   = sparse((tauhat * phihat(r) * what(2,r,ll) * eye(J)))^(-1);
-%       for t=1:T
-%          % sum according to regime
-%          if (sthat(t) == ll)
-%             sumSigma2L1   = sumSigma2L1   + (kron31L1' * Omegabarbar(:, 1+I*J*K*(t-1):I*J*K*t) * kron31L1 * gam4Zt(t)^2);
-%             sumMuSigma2L1 = sumMuSigma2L1 + (gam4Zt(t) * uminusg(:,t)' * Omegabarbar(:,1+I*J*K*(t-1):I*J*K*t) * kron31L1)';
-%          end
-%       end
-% %       Sigma2postInvL1 = S2likeInvL1 + sumSigma2L1;
-% %       Sigma2postL1 = Sigma2postInvL1 \ eye(J);
-% %       mu2postL1    = Sigma2postInvL1 \ (S2likeInvL1*mu2prior(:,ll) + sumMuSigma2L1);
-% %       gamma2hat(:,r,ll) = mvnrnd(mu2postL1, Sigma2postL1);
-%       C = chol(S2likeInvL1 + sumSigma2L1,'lower');    % Cholesky of posterior precision matrix
-%       xhat = C \ sumMuSigma2L1;                       % posterior mean
-%       gamma2hat(:,r,ll) = C'\(xhat + randn(J,1));
-% 
-%       
-%       %%%%%%%%%% update gamma_3lr -- FIXED %%%%%%%%%%
-% %       gamma3hat(:,r,ll) = gamma3hat(:,r,ll);
-%       
-%       
-%       %%%%%%%%%% update gamma_4lr %%%%%%%%%%
-%       sumSigma4L1   = zeros(Q,Q);
-%       sumMuSigma4L1 = zeros(Q,1);
-%       S4likeInvL1   = sparse((tauhat * phihat(r) * what(3,r,ll) * eye(Q)))^(-1);
-%       vec_gam123 = reshape( double(ktensor({gamma1hat(:,r,ll),gamma2hat(:,r,ll),gamma3hat(:,r,ll)})), [], 1);
-%       for t=1:T
-%          % sum according to regime
-%          if (sthat(t) == ll)
-% %             Ztgam2 = Zt(:,t) * gamma2hat(:,r,ll)';
-% %             Sigma4Inv_rlt = Ztgam2 * kron31L1' * Omegabarbar(:,1+I*J*K*(t-1):I*J*K*t) * kron31L1 * Ztgam2';
-% %             mu4_rlt       = (uminusg(:,t)' * Omegabarbar(:,1+I*J*K*(t-1):I*J*K*t) * kron31L1 * Ztgam2')';
-%             sumSigma4L1   = sumSigma4L1   + (Zt(:,t) * vec_gam123' * Omegabarbar(:,1+I*J*K*(t-1):I*J*K*t) * vec_gam123 * Zt(:,t)');
-%             sumMuSigma4L1 = sumMuSigma4L1 + (uminusg(:,t)' * Omegabarbar(:,1+I*J*K*(t-1):I*J*K*t) * vec_gam123 * Zt(:,t)')';
-%          end
-%       end
-% %       Sigma4postInvL1 = S4likeInvL1 + sumSigma4L1;
-% %       Sigma4postL1 = MatPosDef(MatSym(Sigma4postInvL1 \ eye(Q)));
-% %       mu4postL1    = Sigma4postInvL1 \ (S4likeInvL1*mu4prior(:,ll) + sumMuSigma4L1);
-% %       gamma4hat(:,r,ll) = mvnrnd(mu4postL1, Sigma4postL1);
-%       C = chol(S4likeInvL1 + sumSigma4L1,'lower');    % Cholesky of posterior precision matrix
-%       xhat = C \ sumMuSigma4L1;                       % posterior mean
-%       gamma4hat(:,r,ll) = C'\(xhat + randn(Q,1));
-%       end
    end
-   tms(iter,7) = toc;
-
-   tic;
    %%% compute norm,mean of reconstructed tensor %%%
    for ll=1:L
 %       Ghat(:,:,:,:,ll) = full(ktensor({gamma1hat(:,:,ll),gamma2hat(:,:,ll),gamma3hat(:,:,ll),gamma4hat(:,:,ll)}));
       Ghat(:,:,:,:,ll) = ktensor_mod({gamma1hat(:,:,ll),gamma2hat(:,:,ll),gamma3hat(:,:,ll),gamma4hat(:,:,ll)});
    end
-   tms(iter,8) = toc;
    
-   
+      
    %%%%%%%%%% Update rho_l - Be %%%%%%%%%%
    rhohat = betarnd(arpost,brpost);
    
+
    
-   
-   tic;
    %%%%%%%%%% IDENTIFICATION constraint %%%%%%%%%%
    if ident_constr
    % check identifcation constrainnt on mixture probability
@@ -618,10 +525,8 @@ for iter=1:TotIter
       what      = what(:,:,idx);    % hierarchial variance parameter
    end
    end
-   tms(iter,9) = toc;
    
    
-   tic;
    %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
    %%%% STORE current iteration %%%%
    if (iter > burn)   &&   (mod(iter,thin) == 0)
@@ -643,17 +548,15 @@ for iter=1:TotIter
 %          end
 %       end
    end
-   tms(iter,10) = toc;
+
    
    %%% Display current iteration %%%
    if mod(iter,irep) == 0
-      disp(['Iteration: ',num2str(iter),' of ',num2str(TotIter),'. Elapsed time is ',num2str(toc(t0)),' seconds.']);
+      disp(['Iteration: ',num2str(iter),' of ',num2str(TotIter),'. Elapsed time is ',num2str(toc),' seconds.']);
    end
 end
 % save total computing time of MCMC
-OUT.comp_time = ['Computing time = ',num2str(toc(t0)),' seconds.'];
-
-OUT.tms_tab = array2table(tms,'VariableNames',tms_lab);
+OUT.comp_time = ['Computing time = ',num2str(toc),' seconds.'];
 
 % compute posterior means
 post_mean_G = post_mean_G / NumIter;

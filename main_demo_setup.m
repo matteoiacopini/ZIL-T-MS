@@ -47,7 +47,7 @@ burn    = 100;    % number of MCMC samples to be discarded
 irep    = 100;    % display computing time every 'irep' iterations
 
 % generate data and estimate the model
-OUT = Bayes_ZIL_T_MS_1l_TEST(Xt,Zt, 'NumIter',NumIter,'burn',burn,'irep',irep,...
+OUT = Bayes_ZIL_T_MS_1l_FUNC(Xt,Zt, 'NumIter',NumIter,'burn',burn,'irep',irep,...
                                     'HYPER',HYPER,'INIT',INIT);
 
 

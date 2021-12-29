@@ -27,7 +27,7 @@ burn    = 1000;    % number of MCMC samples to be discarded
 HYPER = define_hyperparameters(L,R,'constr_g3',true,'ident_constr',true);
 
 % run MCMC algorithm
-OUT = Bayes_ZIL_T_MS_2l_edgespec_TEST(Xt,Zt, 'R',R,'L',L,'NumIter',NumIter,'burn',burn, 'HYPER',HYPER);
+OUT = Bayes_ZIL_T_MS_2l_edgespec_FUNC(Xt,Zt, 'R',R,'L',L,'NumIter',NumIter,'burn',burn, 'HYPER',HYPER);
 
 
 

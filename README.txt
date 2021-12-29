@@ -55,25 +55,25 @@ and the initial values of the MCMC procedure, then estimates the ZIL-T-MS model.
 The MATALB codes for running the Bayesian Zero-Inflated Logit Tensor model with
 Markov Switching coefficients (ZIL-T-MS) are:
 
-* Bayes_ZIL_T_MS_2l_edgespec_TEST.m
+* Bayes_ZIL_T_MS_2l_edgespec_FUNC.m
   Multi-layer and edge-specific covariates
 Estimates the Bayesian ZIL-T-MS model, when for each time t=1,...,T the observed
 binary arrays Xt are of size (I,J,K), with K > 1, and the covariates Zt are 
 edge-specific, that is of size (I,J,K,Q).
 
-* Bayes_ZIL_T_MS_2l_TEST.m
+* Bayes_ZIL_T_MS_2l_FUNC.m
   Multi-layer and common covariates
 Estimates the Bayesian ZIL-T-MS model, when for each time t=1,...,T the observed
 binary arrays Xt are of size (I,J,K), with K > 1, and the covariates Zt are 
 common, that is of size (Q,1).
 
-* Bayes_ZIL_T_MS_1l_edgespec_TEST.m
+* Bayes_ZIL_T_MS_1l_edgespec_FUNC.m
   Single-layer and edge-specific covariates
 Estimates the Bayesian ZIL-T-MS model, when for each time t=1,...,T the observed
 binary arrays Xt are of size (I,J) and the covariates Zt are edge-specific, 
 that is of size (I,J,K,Q).
 
-* Bayes_ZIL_T_MS_1l_TEST.m
+* Bayes_ZIL_T_MS_1l_FUNC.m
   Single-layer and common covariates
 Estimates the Bayesian ZIL-T-MS model, when for each time t=1,...,T the observed
 binary arrays Xt are of size (I,J) and the covariates Zt are common, that is of 
@@ -147,7 +147,7 @@ function 'name_function'.
 
 The main functions used to generate synthetic datasets from the model are:
 
-* gen_data_TEST.m
+* gen_data_FUNC.m
 main wrapper function that generates a synthetic dataset, starting from the 
 hyperparameters provided by the user or, in absence of inputs from the user,
 using default hyperparameters values.
@@ -170,6 +170,10 @@ covariates, starting from a given coefficient tensor provided as input.
 
 * VAR_gdp_unif.m
 Simulates a stationary VAR(p) process.
+
+* simulation_FUNC.m
+Generates a synthetic dataset and performs the estimation of the ZIL-T-MS
+model.
 
 
 -------------------------------------------------------------------------------

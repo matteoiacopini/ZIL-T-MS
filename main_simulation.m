@@ -40,7 +40,7 @@ burn    = 100;    % number of MCMC samples to be discarded
 irep    = 100;    % display computing time every 'irep' iterations
 
 % generate data and estimate the model
-[OUT,data] = main_simulation_TEST('I',I,'J',J,'K',K,'Q',Q,'T',T,'R',R,'L',L, 'type_coeff',type_coeff, ...
+[OUT,data] = simulation_FUNC('I',I,'J',J,'K',K,'Q',Q,'T',T,'R',R,'L',L, 'type_coeff',type_coeff, ...
                                   'NumIter',NumIter,'burn',burn,'irep',irep);
 
 

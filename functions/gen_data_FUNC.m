@@ -1,7 +1,7 @@
-function data = c(nameArgs)
-%% gen_data_TEST Generate syntetic dataset from ZIL-T-MS model
+function data = gen_data_FUNC(nameArgs)
+%% gen_data_FUNC Generate syntetic dataset from ZIL-T-MS model
 %
-%    DATA = gen_data_TEST(NAMEARGS) Simulates a synthetic dataset from the ZIL-T-MS model.
+%    DATA = gen_data_FUNC(NAMEARGS) Simulates a synthetic dataset from the ZIL-T-MS model.
 %    The parameters of the model are passed as optional name-value pair arguments.
 %    The output is a structure, DATA, containing both the parameters used to simulate the
 %    data and the time series of the synthetic data.
