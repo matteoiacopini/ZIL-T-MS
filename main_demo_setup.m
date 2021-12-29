@@ -11,7 +11,7 @@ clc;
 % restoredefaultpath;
 % addpath(genpath(path(1:sf(end)))); cd(path(1:sf(end)));
 
-disp('%%%%%%%%% Running script file:  main_demo.m   %%%%%%%%%');
+disp('%%%%%%%%% Running script file:  main_demo_setup.m   %%%%%%%%%');
 
 addpath(genpath('./functions'));
 addpath('./Input');

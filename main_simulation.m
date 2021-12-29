@@ -10,7 +10,7 @@ clc;
 % restoredefaultpath;
 % addpath(genpath(path(1:sf(end)))); cd(path(1:sf(end)));
 
-disp('%%%%%%%%% Running script file:  main_demo.m   %%%%%%%%%');
+disp('%%%%%%%%% Running script file:  main_simulation.m   %%%%%%%%%');
 
 addpath(genpath('./functions'));
 addpath('./Input');
@@ -156,6 +156,9 @@ for p=1:NN
          hold on; plot(cumsum(sg)./(1:length(sg))','k'); hold off; xlim([1,NumIter]);
          if (p==1) && (l==1); title('\textbf{State 1}','Interpreter','latex'); end
          if (p==1) && (l==2); title('\textbf{State 2}','Interpreter','latex'); end
+         if (p==1) && (l==3); title('\textbf{State 3}','Interpreter','latex'); end
+         if (p==1) && (l==4); title('\textbf{State 4}','Interpreter','latex'); end
+         if (p==1) && (l==5); title('\textbf{State 5}','Interpreter','latex'); end
       % ACF
       subplot(NN,L*3,((p-1)*L+(l-1))*3+3);
          autocorr(sg,50);  xlabel(''); ylabel(''); title(''); xlim([0,50]);
