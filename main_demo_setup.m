@@ -72,7 +72,7 @@ for l=1:L
 
    % posterior distribution
    subplot(3,L,l);
-      histogram(rl,'Normalization','proba','FaceColor',[1,1,1]*.3*l,'EdgeAlpha',0);
+      histogram(rl,'Normalization','proba','FaceColor',[1,1,1]*.8*l/L,'EdgeAlpha',0);
       xline(mean(rl),'--k','linew',1);
       title(['$\rho_{',num2str(l),'}$'],'Interpreter','latex');
    % trace plot + progressive mean
