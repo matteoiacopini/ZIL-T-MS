@@ -131,9 +131,11 @@ Xt = data.Xt;
 Zt = data.Zt;
 
 if (K == 1)
-   OUT = Bayes_ZIL_T_MS_1l_FUNC(Xt,Zt, 'NumIter',NumIter,'burn',burn,'thin',thin,'irep',irep);
+   HYPER = define_hyperparameters(L,R);
+   OUT = Bayes_ZIL_T_MS_1l_FUNC(Xt,Zt, 'HYPER',HYPER, 'NumIter',NumIter,'burn',burn,'thin',thin,'irep',irep);
 else
-   OUT = Bayes_ZIL_T_MS_2l_FUNC(Xt,Zt, 'NumIter',NumIter,'burn',burn,'thin',thin,'irep',irep);
+   HYPER = define_hyperparameters(L,R);
+   OUT = Bayes_ZIL_T_MS_2l_FUNC(Xt,Zt, 'HYPER',HYPER, 'NumIter',NumIter,'burn',burn,'thin',thin,'irep',irep);
 end
 OUT.data = data;
 OUT.NumIter = NumIter;
