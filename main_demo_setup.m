@@ -73,7 +73,7 @@ for l=1:L
    % posterior distribution
    subplot(3,L,l);
       histogram(rl,'Normalization','proba','FaceColor',[1,1,1]*.3*l,'EdgeAlpha',0);
-      hold on; scatter(rho(l),0,50,'dk','filled'); % xline(mean(rl),'--k','linew',1);
+      xline(mean(rl),'--k','linew',1);
       title(['$\rho_{',num2str(l),'}$'],'Interpreter','latex');
    % trace plot + progressive mean
    subplot(3,L,L+l);
@@ -92,11 +92,10 @@ end
 figure;
 % MAP estimate
 subplot(2,2,1:2);
-stairs(St + L,'-k','linew',1.0);
-hold on; stairs(OUT.MAP_st,'-r','linew',1.0); ylim([0,2*L+2]); hold off;
+hold on; stairs(OUT.MAP_st,'-r','linew',1.0); ylim([0,L+1]); hold off;
 ylabel('$s_t$');  xlabel('time');
-set(gca,'YTick',1:2*L,'YTickLabel',repmat(num2cell(1:L),[1,2]));
-legend({'true','estimate'},'Orientation','horizontal','location','north');
+set(gca,'YTick',1:L,'YTickLabel',repmat(num2cell(1:L),[1,2]));
+legend({'estimate'},'Orientation','horizontal','location','north');
 % trace plot
 subplot(2,2,3:4);
 contourf(OUT.sthat); colormap(flipud(gray)); colorbar;
@@ -151,7 +150,8 @@ for p=1:NN
       % posterior distribution
       subplot(NN,L*3,((p-1)*L+(l-1))*3+1);
          histogram(sg,'normalization','proba','FaceColor',[1,1,1]*.8,'EdgeAlpha',0);
-         hold on; scatter(Gtl(pos(p)),0,40,'dk','filled'); hold off;
+         xline(mean(sg),'--k','linew',1);
+%          hold on; scatter(Gtl(pos(p)),0,40,'dk','filled'); hold off;
          ylabel(ylab,'Interpreter','latex');
       % trace plot + progressive mean
       subplot(NN,L*3,((p-1)*L+(l-1))*3+2);
@@ -159,6 +159,9 @@ for p=1:NN
          hold on; plot(cumsum(sg)./(1:length(sg))','k'); hold off; xlim([1,NumIter]);
          if (p==1) && (l==1); title('\textbf{State 1}','Interpreter','latex'); end
          if (p==1) && (l==2); title('\textbf{State 2}','Interpreter','latex'); end
+         if (p==1) && (l==3); title('\textbf{State 3}','Interpreter','latex'); end
+         if (p==1) && (l==4); title('\textbf{State 4}','Interpreter','latex'); end
+         if (p==1) && (l==5); title('\textbf{State 5}','Interpreter','latex'); end
       % ACF
       subplot(NN,L*3,((p-1)*L+(l-1))*3+3);
          autocorr(sg,50);  xlabel(''); ylabel(''); title(''); xlim([0,50]);
