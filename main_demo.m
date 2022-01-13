@@ -19,7 +19,7 @@ addpath('./Input');
 
 %% Estimation
 
-% settings for generating synthetic data
+% load synthetic data
 load('simdata_T100_I10_J10_K1_Q3_L2.mat');
 
 % settings for the MCMC algorithm

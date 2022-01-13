@@ -1,12 +1,10 @@
 TITLE: "Bayesian Markov Switching Tensor Regression for Time-varying Networks"
 
-AUTHORS:            Monica Billio, Roberto Casarin, Matteo Iacopini
+AUTHORS:            ..........
 
-AVAILABLE AT:       https://arxiv.org/abs/1711.00097
+AVAILABLE AT:       ..........
 
-PLEASE CITE AS:     Billio, M., Casarin, R., Iacopini, M. (20XX),
-		    "Bayesian Markov Switching Tensor Regression for
-                    Time-varying Networks"
+PLEASE CITE AS:     ..........
 
 DATE:               December 2021
 
@@ -102,13 +100,13 @@ Then, according to the input data, the estimation of the ZIL-T-MS model is
 performed as described below, where the default settings of the MCMC are used
 (alternative values of the MCMC parameters can be provided as name-value pairs):
 - If Xt (matrix data) and Zt (common covariates)
-   OUT = Bayes_ZIL_T_MS_1l_TEST(Xt,Zt)
+   OUT = Bayes_ZIL_T_MS_1l_FUNC(Xt,Zt)
 - If Xt (matrix data) and Zt (edge-specific covariates)
-   OUT = Bayes_ZIL_T_MS_1l_edgespec_TEST(Xt,Zt)
+   OUT = Bayes_ZIL_T_MS_1l_edgespec_FUNC(Xt,Zt)
 - If Xt (tensor data) and Zt (common covariates)
-   OUT = Bayes_ZIL_T_MS_2l_TEST(Xt,Zt)
+   OUT = Bayes_ZIL_T_MS_2l_FUNC(Xt,Zt)
 - If Xt (tensor data) and Zt (edge-specific covariates)
-   OUT = Bayes_ZIL_T_MS_2l_edgespec_TEST(Xt,Zt)
+   OUT = Bayes_ZIL_T_MS_2l_edgespec_FUNC(Xt,Zt)
 
 
 NOTE
