@@ -6,10 +6,10 @@ AVAILABLE AT:       ..........
 
 PLEASE CITE AS:     ..........
 
-DATE:               December 2021
+DATE:               May 2022
 
 
-Tested on MATLAB 2021b
+Tested on MATLAB 2021b and MATLAB 2022a
 
 -------------------------------------------------------------------------------
 
