@@ -30,10 +30,10 @@ The following MATALB script file illustrates the use of the estimation procedure
 <br> Demo script, loads a synthetic dataset, sets the hyper-parameters of the prior and the initial values of the MCMC procedure, then estimates the ZIL-T-MS model.
 
 
-&nsp;
+&nbsp;
 
 
-### Functions
+### Main Functions
 -------------------------------------------------------------------------------
 
 The MATALB codes for running the Bayesian Zero-Inflated Logit Tensor model with Markov Switching coefficients (ZIL-T-MS) are:
@@ -51,7 +51,7 @@ The MATALB codes for running the Bayesian Zero-Inflated Logit Tensor model with 
   <br> Single-layer and common covariates -- Estimates the Bayesian ZIL-T-MS model, when for each time t=1,...,T the observed binary arrays Xt are of size (I,J) and the covariates Zt are common, that is of size (Q,1).
 
 
-### USAGE
+#### USAGE
 The functions require two mandatory input arguments (Xt, Zt) that should be arranged as numerical arrays as follows:
 - Xt (single-layer, that is matrix data):
    <br> binary array of size (I,J,T), such that Xt(:,:,t) represents the adjacency matrix at time t=1,...,T
@@ -74,38 +74,27 @@ Then, according to the input data, the estimation of the ZIL-T-MS model is perfo
 
 
 NOTE
-Use   help 'name_function'
-to get further information about the arguments (mandatory and optional) of the
-function 'name_function'.
-
-
-
+Use  help 'name_function'  to get further information about the arguments (mandatory and optional) of the function 'name_function'.
 
 
 -------------------------------------------------------------------------------
+### Other Functions
 
-               %%%%%%%%%%%%%%   Other FUNCTIONS   %%%%%%%%%%%%%%
-
--------------------------------------------------------------------------------
-
-The following functions can be used to set the hyperparameters of the model and
-prior distributions, and to initialize the parameters of the ZIL-T-MS model:
+The following functions can be used to set the hyperparameters of the model and prior distributions, and to initialize the parameters of the ZIL-T-MS model:
 
 * define_hyperparameters.m
-Defines the hyperparameters for the model, setting them to default values if not
-provided by the user.
+<br> Defines the hyperparameters for the model, setting them to default values if not provided by the user.
 
 * define_initial_values.m
-Generates the initial values for the MCMC procedure.
+<br> Generates the initial values for the MCMC procedure.
 
 
 NOTE
-Use   help 'name_function'   to get further information about the arguments (mandatory and optional) of the function 'name_function'.
+Use  help 'name_function'  to get further information about the arguments (mandatory and optional) of the function 'name_function'.
 
 
 
 -------------------------------------------------------------------------------
-
 
 The main functions used to generate synthetic datasets from the model are:
 
@@ -132,7 +121,6 @@ The main functions used to generate synthetic datasets from the model are:
 
 
 -------------------------------------------------------------------------------
-
 
 Additional MATLAB codes files include:
 
