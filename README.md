@@ -1,13 +1,10 @@
-TITLE: "Bayesian Markov Switching Tensor Regression for Time-varying Networks"
+# ZIL-T-MS
 
-AUTHORS:            ..........
+This archive contains data and codes for replicating the analysis in
+Billio, M, Casarin, R., and Iacopini, M. (2022), _Bayesian Markov Switching Tensor Regression for Time-varying Networks_, Journal of the American Statistical Association 119(545), 109–121 (https://doi.org/10.1080/01621459.2022.2102502)
 
-AVAILABLE AT:       ..........
 
-PLEASE CITE AS:     ..........
-
-DATE:               May 2022
-
+### Main codes description
 
 Tested on MATLAB 2021b and MATLAB 2022a
 
